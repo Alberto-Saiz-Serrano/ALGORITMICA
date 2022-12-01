@@ -110,13 +110,87 @@ public class Ejercicios {
         ArrayList<Integer> diana = new ArrayList<Integer>() {{add(2); add (20); add(9); add(8); add(3); add(13); add(4); add(1); add(18);}};
         ArrayList<Diana> solucion6;
         solucion6 = numDardosGreedy(diana, puntuacion2, modojuego);
-        System.out.print("\nRanas(" + modojuego + "): ");
+        System.out.print("\nDiana(" + modojuego + "): ");
         if(solucion6 != null){
             for(Diana dianaActual : solucion6){
                 System.out.print(dianaActual.getValor() + "(" + dianaActual.getCantidad() + ")" + " ");
             }
         } else { System.out.println("No hay Ranas");}
 
+        //Examen Julio 2021
+        int nDiputados = 145;
+        int mayoriaABS = (nDiputados / 2) + 1;
+        float umbralPacto = 0.5F;
+        // lista de partidos políticos
+        ArrayList<Partido> misPartidos = new ArrayList<Partido>();
+        ArrayList<Partido> solucion7;
+        misPartidos.add(new Partido("extIZQ",10,1F));
+        misPartidos.add(new Partido("muyIZQ",10,3F));
+        misPartidos.add(new Partido("IZQ",50,4F));
+        misPartidos.add(new Partido("Centro",5,5F));
+        misPartidos.add(new Partido("Derecha",49,6F));
+        misPartidos. add(new Partido("muyDerecha",10,7F));
+        misPartidos.add(new Partido("extDerecha",10,10F));
+        solucion7 = greedyPactometer(misPartidos, mayoriaABS, umbralPacto);
+        System.out.print("\nPartidos: ");
+        if(solucion7 != null){
+            for(Partido partido : solucion7){
+                System.out.print(partido.getNombre() + "(" + partido.getDiputados() + ")" + " ");
+            }
+        } else { System.out.println("No hay Ranas");}
+
+        /*
+        //Examen Enero 2022
+        int maxAlumnos = 4;
+        ArrayList<Estudiante> misEstudiantes = new ArrayList<>();
+        ArrayList<Grupo> solucion8;
+        misEstudiantes.add(new Estudiante("Alberto", "Saiz", true, 10));
+        misEstudiantes.add(new Estudiante("Carlos", "Castillo", true, 9.7));
+        misEstudiantes.add(new Estudiante("Lucas", "Luque", true, 8.1));
+        misEstudiantes.add(new Estudiante("Paula", "SantaMaria", false, 1.3));
+        misEstudiantes.add(new Estudiante("Raquel", "Tricio", false, 5));
+        misEstudiantes.add(new Estudiante("Alex", "Ramos", true, 7.6));
+        misEstudiantes.add(new Estudiante("Almudena", "Manzanares", false, 2.4));
+        misEstudiantes.add(new Estudiante("Diego", "Vargas", true, 2.9));
+        misEstudiantes.add(new Estudiante("Maria", "DelaRosa", false, 6.4));
+        misEstudiantes.add(new Estudiante("Manuela", "Rodriguez", false, 5.8));
+        solucion8 = mezclaEstudiantes(misEstudiantes, 4);
+        System.out.print("\nGrupos: ");
+        if(solucion8 != null){
+            for(Grupo grupo : solucion8){
+                System.out.println("{");
+                for(int i = 0; i < grupo.getNumAlumnos(); i++){
+                    Estudiante x = grupo.getAlumnos().get(i);
+                    System.out.print(x.getNombre() + " " + x.getApellidos());
+                }
+                System.out.println("(" + calcularNotaMedia(grupo, maxAlumnos)  + ")" + "}");
+            }
+        } else { System.out.println("No hay Estudiantes");}
+        */
+
+        //Examen Julio 2022
+        ArrayList<Concursante> supervivientes = new ArrayList<>();
+        ArrayList<Concursante> equipo1 = new ArrayList<>();
+        ArrayList<Concursante> equipo2 = new ArrayList<>();
+        supervivientes.add(new Concursante(1, 45, 79, true));
+        supervivientes.add(new Concursante(2, 18, 43, true));
+        supervivientes.add(new Concursante(3, 20, 90, false));
+        supervivientes.add(new Concursante(4, 32, 85, false));
+        supervivientes.add(new Concursante(5, 41, 50, true));
+        supervivientes.add(new Concursante(6, 19, 73, false));
+        crearEquiposVoraz(supervivientes, equipo1, equipo2);
+        System.out.print("\nEquipo 1: ");
+        double suma1 = 0, suma2 = 0;
+        for(Concursante concursante : equipo1){
+            System.out.print(concursante.getId() + " ");
+            suma1 += calcularFuerza(concursante.getEdad(), concursante.getPeso(), concursante.isGenero());
+        }
+        System.out.println("(" + suma1 + ")");
+        for(Concursante concursante : equipo2){
+            System.out.print(concursante.getId() + " ");
+            suma2 += calcularFuerza(concursante.getEdad(), concursante.getPeso(), concursante.isGenero());
+        }
+        System.out.println("(" + suma2 + ")");
     }
 
     //Ej Diapositivas 1
@@ -337,4 +411,159 @@ public class Ejercicios {
         }
         return mayor;
     }
+
+    //Examen Julio 2021
+    public static ArrayList<Partido> greedyPactometer(ArrayList<Partido> misPartidos, int mayoriaABS, float umbralPacto){
+        ArrayList<Partido> solucion = new ArrayList<>();
+        Partido mayorNumDiputados = seleccionarPartidoGobierno(misPartidos);
+        misPartidos.remove(mayorNumDiputados);
+        solucion.add(mayorNumDiputados);
+        mayoriaABS -= mayorNumDiputados.getDiputados();
+
+        while(!misPartidos.isEmpty() && mayoriaABS > 0){
+            Partido candidato = seleccionarCandidatoPartido(misPartidos, mayorNumDiputados);
+            misPartidos.remove(candidato);
+            if(candidato.Perjuicio(mayorNumDiputados) < umbralPacto){
+                solucion.add(candidato);
+                mayoriaABS -= candidato.getDiputados();
+            }
+        }
+
+        if(!solucion.isEmpty()){ return solucion;}
+        else return null;
+    }
+    private static Partido seleccionarPartidoGobierno(ArrayList<Partido> misPartidos){
+        Partido mayorDiputados = null;
+        int mayor = Integer.MIN_VALUE;
+
+        for(Partido partido : misPartidos){
+            if(mayorDiputados == null || partido.getDiputados() > mayor){
+                mayorDiputados = partido;
+                mayor = partido.getDiputados();
+            }
+        }
+        return mayorDiputados;
+    }
+    private static Partido seleccionarCandidatoPartido(ArrayList<Partido> partidos, Partido partidoPrincipal){
+        Partido p = null;
+        float perjuicioMejor = Integer.MAX_VALUE;
+
+        for(Partido partido : partidos){
+            if(p == null || partidoPrincipal.Perjuicio(partido) < perjuicioMejor){
+                p = partido;
+                perjuicioMejor = partidoPrincipal.Perjuicio(partido);
+            } else if(partidoPrincipal.Perjuicio(partido) == perjuicioMejor){
+                if(partido.getDiputados() > p.getDiputados()){
+                    p = partido;
+                    perjuicioMejor = partidoPrincipal.Perjuicio(partido);
+                }
+            }
+        }
+
+        return p;
+    }
+
+
+    //Examen Enero 2022
+    /*
+    public static ArrayList<Grupo> mezclaEstudiantes(ArrayList<Estudiante> listaEst, int maxAlumnos) {
+        ArrayList<Grupo> solucion = new ArrayList<>();
+        int numGrupos = listaEst.size() / maxAlumnos;
+        Grupo [] grupos = new Grupo[numGrupos];
+        for(int i = 0; i < grupos.length; i++){
+            grupos[i] = new Grupo(new ArrayList<>(), maxAlumnos, 0);
+        }
+
+        while(!listaEst.isEmpty()){
+            Estudiante candidato = seleccionarCandidatoEstudiante(listaEst);
+            listaEst.remove(candidato);
+            int grupoMenorMedia = grupoMenorNotaMedia(solucion, maxAlumnos);
+            grupos[grupoMenorMedia].getAlumnos().add(candidato);
+            grupos[grupoMenorMedia].setNumAlumnos(grupos[grupoMenorMedia].getNumAlumnos() + 1);
+        }
+
+        for(int i = 0; i < grupos.length; i++){
+            solucion.add(grupos[i]);
+        }
+
+        if(!solucion.isEmpty()){ return solucion;}
+        else return null;
+    }
+    private static Estudiante seleccionarCandidatoEstudiante(ArrayList<Estudiante> listaEst){
+        Estudiante mejor = null;
+        double mejorNota = Double.MAX_VALUE;
+
+        for(Estudiante estudiante : listaEst){
+            if(mejor == null || estudiante.getNota() > mejorNota){
+                mejor = estudiante;
+                mejorNota = estudiante.getNota();
+            }
+        }
+
+        return mejor;
+    }
+    private static int calcularNotaMedia(Grupo grupo, int maxAlumnos){
+        int sumaNota = 0;
+
+        for(Estudiante estudiante : grupo.getAlumnos()){
+            sumaNota += estudiante.getNota();
+        }
+
+        return sumaNota / maxAlumnos;
+    }
+    private static int grupoMenorNotaMedia(ArrayList<Grupo> grupos, int maxAlumnos){
+        int grupoMenorMedia = -1;
+        double menorNotaMedia = Double.MAX_VALUE;
+
+        for(int i = 0; i < grupos.size(); i++){
+            Grupo grupo = grupos.get(i);
+            if(grupoMenorMedia == -1 || calcularNotaMedia(grupo, maxAlumnos) < menorNotaMedia){
+                grupoMenorMedia = i;
+                menorNotaMedia = calcularNotaMedia(grupo, maxAlumnos);
+            }
+        }
+
+        return grupoMenorMedia;
+    }
+     */
+
+    //Examen Julio 2022
+    public static void crearEquiposVoraz(ArrayList<Concursante> supervivientes, ArrayList<Concursante> equipo1, ArrayList<Concursante> equipo2){
+        double fuerza1 = 0, fuerza2 = 0;
+
+        while(!supervivientes.isEmpty()){
+            Concursante candidato = seleccionarCandidatoConcursante(supervivientes);
+            supervivientes.remove(candidato);
+            double fuerza = calcularFuerza(candidato.getEdad(), candidato.getPeso(), candidato.isGenero());
+            if(fuerza1 <= fuerza2){
+                equipo1.add(candidato);
+                fuerza1 += fuerza;
+            } else {
+                equipo2.add(candidato);
+                fuerza2 += fuerza;
+            }
+        }
+    }
+    private static Concursante seleccionarCandidatoConcursante(ArrayList<Concursante> supervivientes){
+        Concursante masFuerte = null;
+        double masFuerza = Double.MIN_VALUE;
+
+        for(Concursante concursante : supervivientes){
+            double fuerza = calcularFuerza(concursante.getEdad(), concursante.getPeso(), concursante.isGenero());
+            if(masFuerte == null || fuerza > masFuerza){
+                masFuerte = concursante;
+                masFuerza = fuerza;
+            }
+        }
+
+        return masFuerte;
+    }
+    private static double calcularFuerza(int edad, int peso, boolean genero){
+        double g;
+        if(!genero) { g = 1.3;}
+        else { g = 1;}
+
+        return  (double) 1 / edad * 1 / peso * g;
+    }
+
 }

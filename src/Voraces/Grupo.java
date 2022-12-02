@@ -17,6 +17,11 @@ public class Grupo {
         return maxAlumnos - numAlumnos;
     }
 
+    public void addEstudiante(Estudiante estudiante){
+        alumnos.add(estudiante);
+        this.numAlumnos++;
+    }
+
     public ArrayList<Estudiante> getAlumnos() {
         return alumnos;
     }

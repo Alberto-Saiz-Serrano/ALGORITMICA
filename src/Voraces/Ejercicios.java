@@ -139,34 +139,35 @@ public class Ejercicios {
             }
         } else { System.out.println("No hay Ranas");}
 
-        /*
         //Examen Enero 2022
         int maxAlumnos = 4;
         ArrayList<Estudiante> misEstudiantes = new ArrayList<>();
         ArrayList<Grupo> solucion8;
-        misEstudiantes.add(new Estudiante("Alberto", "Saiz", true, 10));
+        misEstudiantes.add(new Estudiante("Diego", "Vargas", true, 10));
         misEstudiantes.add(new Estudiante("Carlos", "Castillo", true, 9.7));
         misEstudiantes.add(new Estudiante("Lucas", "Luque", true, 8.1));
-        misEstudiantes.add(new Estudiante("Paula", "SantaMaria", false, 1.3));
-        misEstudiantes.add(new Estudiante("Raquel", "Tricio", false, 5));
         misEstudiantes.add(new Estudiante("Alex", "Ramos", true, 7.6));
+        misEstudiantes.add(new Estudiante("Irene", "Marsi", false, 6.4));
+        misEstudiantes.add(new Estudiante("Alberto", "Saiz", true, 5.8));
+        misEstudiantes.add(new Estudiante("Raquel", "Tricio", false, 5));
+        misEstudiantes.add(new Estudiante("David", "Bracamonte", true, 2.9));
         misEstudiantes.add(new Estudiante("Almudena", "Manzanares", false, 2.4));
-        misEstudiantes.add(new Estudiante("Diego", "Vargas", true, 2.9));
-        misEstudiantes.add(new Estudiante("Maria", "DelaRosa", false, 6.4));
-        misEstudiantes.add(new Estudiante("Manuela", "Rodriguez", false, 5.8));
-        solucion8 = mezclaEstudiantes(misEstudiantes, 4);
+        misEstudiantes.add(new Estudiante("Paula", "SantaMaria", false, 1.3));
+        solucion8 = mezclaEstudiantes(misEstudiantes, maxAlumnos);
         System.out.print("\nGrupos: ");
         if(solucion8 != null){
             for(Grupo grupo : solucion8){
-                System.out.println("{");
+                System.out.print("{");
                 for(int i = 0; i < grupo.getNumAlumnos(); i++){
                     Estudiante x = grupo.getAlumnos().get(i);
+                    if(i != 0){
+                        System.out.print(", ");
+                    }
                     System.out.print(x.getNombre() + " " + x.getApellidos());
                 }
-                System.out.println("(" + calcularNotaMedia(grupo, maxAlumnos)  + ")" + "}");
+                System.out.print("(" + calcularNotaMedia(grupo)  + ")" + "}");
             }
         } else { System.out.println("No hay Estudiantes");}
-        */
 
         //Examen Julio 2022
         ArrayList<Concursante> supervivientes = new ArrayList<>();
@@ -465,35 +466,49 @@ public class Ejercicios {
 
 
     //Examen Enero 2022
-    /*
     public static ArrayList<Grupo> mezclaEstudiantes(ArrayList<Estudiante> listaEst, int maxAlumnos) {
         ArrayList<Grupo> solucion = new ArrayList<>();
-        int numGrupos = listaEst.size() / maxAlumnos;
-        Grupo [] grupos = new Grupo[numGrupos];
-        for(int i = 0; i < grupos.length; i++){
-            grupos[i] = new Grupo(new ArrayList<>(), maxAlumnos, 0);
-        }
+        //solucion.add(new Grupo(null, maxAlumnos, 0));
+        boolean coger = true;
 
-        while(!listaEst.isEmpty()){
-            Estudiante candidato = seleccionarCandidatoEstudiante(listaEst);
-            listaEst.remove(candidato);
-            int grupoMenorMedia = grupoMenorNotaMedia(solucion, maxAlumnos);
-            grupos[grupoMenorMedia].getAlumnos().add(candidato);
-            grupos[grupoMenorMedia].setNumAlumnos(grupos[grupoMenorMedia].getNumAlumnos() + 1);
-        }
-
-        for(int i = 0; i < grupos.length; i++){
-            solucion.add(grupos[i]);
+        if(maxAlumnos >= listaEst.size()){
+            solucion.add(new Grupo(listaEst, maxAlumnos, listaEst.size()));
+        } else {
+            while(!listaEst.isEmpty()){
+                Estudiante candidato;
+                if(coger){
+                    candidato = seleccionarMejorNota(listaEst);
+                } else {
+                    candidato = seleccionarPeorNota(listaEst);
+                }
+                listaEst.remove(candidato);
+                addEstudiante(solucion, candidato, maxAlumnos);
+                if(coger){ coger = false;}
+                else { coger = true;}
+            }
         }
 
         if(!solucion.isEmpty()){ return solucion;}
         else return null;
     }
-    private static Estudiante seleccionarCandidatoEstudiante(ArrayList<Estudiante> listaEst){
+    private static void addEstudiante(ArrayList<Grupo> solucion, Estudiante estudiante, int maxAlumnos){
+        if(solucion.size() == 0){
+            solucion.add(new Grupo(new ArrayList<>(), maxAlumnos, 0));
+        }
+        int grupo = solucion.size() - 1;
+        if(solucion.get(grupo).getAlumnosRestantes() > 0){
+            solucion.get(grupo).addEstudiante(estudiante);
+        } else {
+            grupo++;
+            solucion.add(new Grupo(new ArrayList<>(), maxAlumnos, 0));
+            solucion.get(grupo).addEstudiante(estudiante);
+        }
+    }
+    private static Estudiante seleccionarMejorNota(ArrayList<Estudiante> estudiantes){
         Estudiante mejor = null;
-        double mejorNota = Double.MAX_VALUE;
+        double mejorNota = Double.MIN_VALUE;
 
-        for(Estudiante estudiante : listaEst){
+        for(Estudiante estudiante : estudiantes){
             if(mejor == null || estudiante.getNota() > mejorNota){
                 mejor = estudiante;
                 mejorNota = estudiante.getNota();
@@ -502,30 +517,30 @@ public class Ejercicios {
 
         return mejor;
     }
-    private static int calcularNotaMedia(Grupo grupo, int maxAlumnos){
-        int sumaNota = 0;
+    private static Estudiante seleccionarPeorNota(ArrayList<Estudiante> estudiantes){
+        Estudiante peor = null;
+        double peorNota = Double.MAX_VALUE;
 
-        for(Estudiante estudiante : grupo.getAlumnos()){
-            sumaNota += estudiante.getNota();
-        }
-
-        return sumaNota / maxAlumnos;
-    }
-    private static int grupoMenorNotaMedia(ArrayList<Grupo> grupos, int maxAlumnos){
-        int grupoMenorMedia = -1;
-        double menorNotaMedia = Double.MAX_VALUE;
-
-        for(int i = 0; i < grupos.size(); i++){
-            Grupo grupo = grupos.get(i);
-            if(grupoMenorMedia == -1 || calcularNotaMedia(grupo, maxAlumnos) < menorNotaMedia){
-                grupoMenorMedia = i;
-                menorNotaMedia = calcularNotaMedia(grupo, maxAlumnos);
+        for(Estudiante estudiante : estudiantes){
+            if(peor == null || estudiante.getNota() < peorNota){
+                peor = estudiante;
+                peorNota = estudiante.getNota();
             }
         }
 
-        return grupoMenorMedia;
+        return peor;
+
+
     }
-     */
+    private static double calcularNotaMedia(Grupo grupo){
+        int suma = 0;
+
+        for(int i = 0; i < grupo.getNumAlumnos(); i++){
+            suma += grupo.getAlumnos().get(i).getNota();
+        }
+
+        return (double) suma / grupo.getNumAlumnos();
+    }
 
     //Examen Julio 2022
     public static void crearEquiposVoraz(ArrayList<Concursante> supervivientes, ArrayList<Concursante> equipo1, ArrayList<Concursante> equipo2){
